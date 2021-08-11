@@ -1,37 +1,37 @@
+#include <iostream>
 
-#include <stdio.h>
+class Coord {
+	int x, y;
+	public:
+		Coord(int x, int y): x(x), y(y) {}
+};
 
-typedef struct {
-  int x,y;
-} coord, *Coord;
+class Cube {
+	int x, y, z;
+	public:
+		Cube(int x, int y, int z): x(x), y(y), z(z) {}
 
-typedef struct {
-  int x,y,z;
-} cube, *Cube;
+		int volume();
+		void print_volume();
+};
 
-void coord_new(Coord c, int x, int y) {
-  c->x = x;
-  c->y = y;
+int Cube::volume()
+{
+	/* poderia lançar uma exception no caso de overflow */
+	return x * y * z;
 }
 
-
-void cube_new(Cube c, int x, int y, int z) {
-  c->x = x;
-  c->y = y;
-  c->z = z;
+void Cube::print_volume()
+{
+	std::cout << volume() << std::endl;
 }
 
-void cube_print_volume(Cube c) {
-  printf("%d\n", c->x * c->y * c->z);
-}
+int main()
+{
+	Coord c1 {50, 10};
+	Cube c2 {10, 20, 30};
 
-int main() {
-  coord c1;
-  cube c2;
+	c2.print_volume();
 
-  coord_new(&c1, 50, 10);
-  cube_new(&c2, 10, 20, 30);
-  cube_print_volume(&c2);
-
-  return 0;
+	return 0;
 }
