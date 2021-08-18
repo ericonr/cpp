@@ -28,10 +28,13 @@ void Cube::print_volume()
 
 int main()
 {
-	Coord c1 {50, 10};
-	Cube c2 {10, 20, 30};
+	auto *c1 = new Coord {50, 10};
+	auto *c2 = new Cube {10, 20, 30};
 
-	c2.print_volume();
+	c2->print_volume();
+
+	delete c1;
+	delete c2;
 
 	return 0;
 }
