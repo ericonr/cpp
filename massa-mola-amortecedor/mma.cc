@@ -111,8 +111,6 @@ class Sistema {
 
 			// acumular o contador de tempo
 			tempo_total = tempo_total + t;
-
-			print_fields();
 		}
 
 		void print_fields()
@@ -132,8 +130,8 @@ int main()
 	// v0 = 2 m/s
 	auto sistema = std::make_unique<Sistema>(10, 3, 1.5, 5, 2);
 
-	sistema->print_fields();
 	for (int i = 0; i < 10000; i++) {
+		sistema->print_fields();
 		sistema->simulate(T);
 	}
 }
