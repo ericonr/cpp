@@ -37,27 +37,13 @@ struct Time {
 const Time T{0.01}; // período de simulação
 
 class Massa {
-	Mass m;
-
 	public:
+		Mass m;
 		Position x;
 		Speed xd;
-		Accel xdd;
 
-		Massa(double m, double x = 0., double xd = 0., double xdd = 0.):
-			m{m}, x{x}, xd{xd}, xdd{xdd} {}
-
-		void update_accel(Force f) { xdd = f / m; }
-		void update_fields(Time t)
-		{
-			x = x + t * xd;
-			xd = xd + t * xdd;
-		}
-
-		void print_fields(std::ostream &out)
-		{
-			out << x.x << "," << xd.x << "," << xdd.x;
-		}
+		Massa(double m, double x = 0., double xd = 0.):
+			m{m}, x{x}, xd{xd} {}
 };
 
 class Mola {
@@ -76,6 +62,18 @@ class Amortecedor {
 		Force force(Speed s) { return {-b * s.x}; }
 };
 
+class View {
+	std::ostream &out;
+	public:
+		View(std::ostream &out): out(out) {}
+		void print(const Massa &m);
+		void print(const Time &t);
+		void finish_print() { out << std::endl; }
+};
+
+void View::print(const Massa &m) { out << m.x.x << "," << m.xd.x; }
+void View::print(const Time &t) { out << t.t << ","; }
+
 // sistema implementando um modelo massa-mola-amortecedor
 // as equações utilizadas para o modelo foram:
 // ∑F = mx''
@@ -90,13 +88,13 @@ class Sistema {
 	Mola mola;
 	Amortecedor amortecedor;
 	Time tempo_total;
-	std::ostream &out;
+	View &v;
 
 	public:
 		Sistema(double massa_m, double mola_k, double amortecedor_b,
-				double x, double xd, std::ostream &out = std::cout):
+				double x, double xd, View &v):
 			massa(massa_m, x, xd), mola(mola_k), amortecedor(amortecedor_b),
-			tempo_total(0), out(out) {}
+			tempo_total(0), v(v) {}
 
 		void simulate(Time t)
 		{
@@ -105,9 +103,8 @@ class Sistema {
 			f = f + amortecedor.force(massa.xd);
 
 			// atualizar posição e velocidade com aceleração atual
-			massa.update_fields(t);
-			// atualizar aceleração baseado na força
-			massa.update_accel(f);
+			massa.x = massa.x + t*massa.xd;
+			massa.xd = massa.xd + t*(f/massa.m);
 
 			// acumular o contador de tempo
 			tempo_total = tempo_total + t;
@@ -115,20 +112,21 @@ class Sistema {
 
 		void print_fields()
 		{
-			out << tempo_total.t << ",";
-			massa.print_fields(out);
-			out << std::endl;
+			v.print(tempo_total);
+			v.print(massa);
+			v.finish_print();
 		}
 };
 
 int main()
 {
+	View v{std::cout};
 	// m = 10kg
 	// k = 3 N/m
 	// b = 1.5 kg/s
 	// x0 = 5 m
 	// v0 = 2 m/s
-	auto sistema = std::make_unique<Sistema>(10, 3, 1.5, 5, 2);
+	auto sistema = std::make_unique<Sistema>(10, 3, 1.5, 5, 2, v);
 
 	for (int i = 0; i < 10000; i++) {
 		sistema->print_fields();
