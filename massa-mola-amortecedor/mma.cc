@@ -72,11 +72,12 @@ class View {
 	SDL_Renderer *renderer;
 	SDL_Texture *texture, *bg;
 	SDL_Rect target;
+	Massa &m;
 
 	public:
-		View():
+		View(Massa &m):
 			window(nullptr), renderer(nullptr),
-			texture(nullptr), bg(nullptr)
+			texture(nullptr), bg(nullptr), m(m)
 		{
 			if (SDL_Init (SDL_INIT_VIDEO) < 0) {
 				throw std::runtime_error(SDL_GetError());
@@ -112,23 +113,18 @@ class View {
 			SDL_Quit();
 		}
 
-		void begin_print() { SDL_RenderClear(renderer); }
-		void print(const Massa &m);
-		void print(const Time &t);
-		void finish_print() { std::cout << std::endl; SDL_RenderPresent(renderer); }
+		void render();
 };
 
-void View::print(const Massa &m)
+void View::render()
 {
-	std::cout << m.x.x << "," << m.xd.x;
+	SDL_RenderClear(renderer);
 
 	SDL_RenderCopy(renderer, bg, nullptr, nullptr);
 	target.x = m.x.x;
 	SDL_RenderCopy(renderer, texture, nullptr, &target);
-}
-void View::print(const Time &t)
-{
-	std::cout << t.t << ",";
+
+	SDL_RenderPresent(renderer);
 }
 
 class Entrada {
@@ -171,17 +167,15 @@ void Entrada::refresh()
 // como o sistema pode conter muitas variáveis internas,
 // recomenda-se alocá-lo no heap por padrão
 class Sistema {
-	Massa massa;
+	Massa &massa;
 	Mola mola;
 	Amortecedor amortecedor;
 	Time tempo_total;
-	View &v;
 
 	public:
-		Sistema(double massa_m, double mola_k, double amortecedor_b,
-				double x, double xd, View &v):
-			massa(massa_m, x, xd), mola(mola_k), amortecedor(amortecedor_b),
-			tempo_total(0), v(v) {}
+		Sistema(Massa &m, double mola_k, double amortecedor_b):
+			massa(m), mola(mola_k), amortecedor(amortecedor_b),
+			tempo_total(0) {}
 
 		void simulate(Time t)
 		{
@@ -196,28 +190,23 @@ class Sistema {
 			// acumular o contador de tempo
 			tempo_total = tempo_total + t;
 		}
-
-		void print_fields()
-		{
-			v.print(tempo_total);
-			v.print(massa);
-			v.finish_print();
-		}
 };
 
 int main()
 {
-	View v{};
-	Entrada e{v};
 	// m = 10kg
 	// k = 3 N/m
 	// b = 1.5 kg/s
 	// x0 = 5 m
 	// v0 = 2 m/s
-	auto sistema = std::make_unique<Sistema>(10, 3, 1.5, 5, 2, v);
+	Massa m{10, 5, 2};
+	auto sistema = std::make_unique<Sistema>(m, 3, 1.5);
+
+	View v{m};
+	Entrada e{v};
 
 	for (int i = 0; i < 10000; i++) {
-		sistema->print_fields();
+		v.render();
 		sistema->simulate(T);
 		e.refresh();
 		if (e.should_quit()) break;
