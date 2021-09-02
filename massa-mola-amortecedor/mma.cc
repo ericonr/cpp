@@ -31,6 +31,8 @@ struct Force {
 	Force operator+(Force o) { return {x + o.x}; }
 	Accel operator/(Mass o) { return {x / o.x}; }
 };
+Force force_from_ma(const Mass &m, const Accel &a) { return {m.x * a.x}; }
+
 struct Time {
 	double t;
 	Time(double t): t(t) {}
@@ -39,7 +41,8 @@ struct Time {
 	Position operator*(Speed o) { return {t * o.x}; }
 };
 
-const Time T{0.01}; // período de simulação
+const Time T{0.01}; // período de amostragem
+const Accel g{10.}; // gravidade
 
 class Massa {
 	public:
@@ -189,6 +192,7 @@ class Sistema {
 			// obter forças para valores atuais
 			Force f = mola.force(massa.x);
 			f = f + amortecedor.force(massa.xd);
+			f = f + force_from_ma(massa.m, g);
 
 			// atualizar posição e velocidade com aceleração atual
 			massa.x = massa.x + t*massa.xd;
