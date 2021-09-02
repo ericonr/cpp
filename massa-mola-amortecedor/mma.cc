@@ -77,9 +77,10 @@ class View {
 	SDL_Rect target;
 	Massa &m;
 
-	int ajustar_coord(int coord, int dimensao_objeto, int dimensao_max)
+	int ajustar_coord(const Position &p, int dimensao_objeto, int dimensao_max)
 	{
-		return coord + dimensao_max/2 - dimensao_objeto/2;
+		// 1m = 100px
+		return (int)(p.x * 100.) + dimensao_max/2 - dimensao_objeto/2;
 	}
 
 	public:
@@ -108,7 +109,8 @@ class View {
 			texture = IMG_LoadTexture(renderer, "../sdl/capi.png");
 			bg = IMG_LoadTexture(renderer, "../sdl/park.jpeg");
 			SDL_QueryTexture(texture, nullptr, nullptr, &target.w, &target.h);
-			target.x = ajustar_coord(0, target.w, SCREEN_WIDTH);
+			Position p{0};
+			target.x = ajustar_coord(p, target.w, SCREEN_WIDTH);
 			target.y = 0;
 		}
 
@@ -131,7 +133,7 @@ void View::render()
 	SDL_RenderClear(renderer);
 
 	SDL_RenderCopy(renderer, bg, nullptr, nullptr);
-	target.y = ajustar_coord(m.x.x, target.h, SCREEN_HEIGHT);
+	target.y = ajustar_coord(m.x, target.h, SCREEN_HEIGHT);
 	SDL_RenderCopy(renderer, texture, nullptr, &target);
 
 	SDL_RenderPresent(renderer);
@@ -206,7 +208,7 @@ class Sistema {
 int main()
 {
 	// m(kg), x0(m), v0(m/s)
-	Massa m{10, 200, 2};
+	Massa m{1, 4, 2};
 	// k(N/m), b(kg/s)
 	auto sistema = std::make_unique<Sistema>(m, 15, 1.5);
 
