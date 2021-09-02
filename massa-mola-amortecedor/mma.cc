@@ -114,6 +114,8 @@ class View {
 		}
 
 		void render();
+
+		void delay(Time t) { SDL_Delay(t.t * 1000); }
 };
 
 void View::render()
@@ -210,5 +212,6 @@ int main()
 		sistema->simulate(T);
 		e.refresh();
 		if (e.should_quit()) break;
+		v.delay(T);
 	}
 }
