@@ -102,6 +102,16 @@ class View {
 			target.y = 0;
 			SDL_QueryTexture(texture, nullptr, nullptr, &target.w, &target.h);
 		}
+
+		~View()
+		{
+			SDL_DestroyTexture(texture);
+			SDL_DestroyTexture(bg);
+			SDL_DestroyRenderer(renderer);
+			SDL_DestroyWindow(window);
+			SDL_Quit();
+		}
+
 		void begin_print() { SDL_RenderClear(renderer); }
 		void print(const Massa &m);
 		void print(const Time &t);
@@ -119,6 +129,36 @@ void View::print(const Massa &m)
 void View::print(const Time &t)
 {
 	std::cout << t.t << ",";
+}
+
+class Entrada {
+	SDL_Event event;
+	const Uint8 *keyboard;
+
+	bool m_should_quit;
+
+	public:
+		// recebe uma View para garantir que já tenhamos chamado SDL_Init()
+		Entrada(const View &v):
+			m_should_quit(false)
+		{
+			keyboard = SDL_GetKeyboardState(nullptr);
+		}
+
+		void refresh();
+		bool should_quit() { return m_should_quit; }
+};
+
+void Entrada::refresh()
+{
+	SDL_PumpEvents();
+	if (keyboard[SDL_SCANCODE_Q]) m_should_quit = true;
+
+	while (SDL_PollEvent(&event)) {
+		if (event.type == SDL_QUIT) {
+			m_should_quit = true;
+		}
+	}
 }
 
 // sistema implementando um modelo massa-mola-amortecedor
@@ -168,6 +208,7 @@ class Sistema {
 int main()
 {
 	View v{};
+	Entrada e{v};
 	// m = 10kg
 	// k = 3 N/m
 	// b = 1.5 kg/s
@@ -178,5 +219,7 @@ int main()
 	for (int i = 0; i < 10000; i++) {
 		sistema->print_fields();
 		sistema->simulate(T);
+		e.refresh();
+		if (e.should_quit()) break;
 	}
 }
