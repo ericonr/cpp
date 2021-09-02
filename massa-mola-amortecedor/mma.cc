@@ -196,13 +196,10 @@ class Sistema {
 
 int main()
 {
-	// m = 10kg
-	// k = 3 N/m
-	// b = 1.5 kg/s
-	// x0 = 5 m
-	// v0 = 2 m/s
-	Massa m{10, 5, 2};
-	auto sistema = std::make_unique<Sistema>(m, 3, 1.5);
+	// m(kg), x0(m), v0(m/s)
+	Massa m{10, 300, 2};
+	// k(N/m), b(kg/s)
+	auto sistema = std::make_unique<Sistema>(m, 15, 1.5);
 
 	View v{m};
 	Entrada e{v};
