@@ -215,11 +215,10 @@ int main()
 	View v{m};
 	Entrada e{v};
 
-	for (int i = 0; i < 10000; i++) {
+	while (!e.should_quit()) {
 		v.render();
 		sistema->simulate(T);
 		e.refresh();
-		if (e.should_quit()) break;
 		v.delay(T);
 	}
 }
